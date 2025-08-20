@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Pixabay Search</title>
+<style>
+body { font-family: sans-serif; background: #111; color: #fff; text-align: center; }
+input, button { padding: 8px; margin: 5px; }
+.gallery { display: grid; grid-template-columns: repeat(auto-fill,minmax(200px,1fr)); gap: 10px; padding: 10px; }
+img { width: 100%; border-radius: 6px; }
+</style>
+</head>
+<body>
+<h1>Pixabay Search</h1>
+<input id="apiKey" placeholder="API Key">
+<input id="query" placeholder="Search term">
+<button onclick="searchPixabay()">Search</button>
+<div id="msg"></div>
+<div id="gallery" class="gallery"></div>
+
+<script>
+async function searchPixabay() {
+  const key = document.getElementById('apiKey').value.trim();
+  const q = document.getElementById('query').value.trim();
+  if (!key || !q) return alert("Enter API key and search term");
+  const url = `https://pixabay.com/api/?key=${key}&q=${encodeURIComponent(q)}&image_type=photo&safesearch=true`;
+  document.getElementById('msg').textContent = "Loading...";
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    if (!data.hits.length) {
+      document.getElementById('msg').textContent = "No results";
+      document.getElementById('gallery').innerHTML = "";
+      return;
+    }
+    document.getElementById('msg').textContent = `${data.totalHits} results`;
+    document.getElementById('gallery').innerHTML = data.hits.map(img =>
+      `<a href="${img.pageURL}" target="_blank"><img src="${img.webformatURL}" alt="${img.tags}"></a>`
+    ).join("");
+  } catch (err) {
+    document.getElementById('msg').textContent = "Error: " + err.message;
+    document.getElementById('gallery').innerHTML = "";
+  }
+}
+</script>
+</body>
+</html>
